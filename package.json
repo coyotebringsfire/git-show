@@ -1,0 +1,36 @@
+{
+  "name": "git-show",
+  "version": "0.0.1",
+  "description": "runs git show <commit> and parses the results",
+  "main": "git_show.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/coyotebringsfire/git-show.git"
+  },
+  "keywords": [
+    "git",
+    "git-wrapper2",
+    "simple-statistics",
+    "async",
+    "mocha",
+    "debug"
+  ],
+  "author": "aumkara@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/coyotebringsfire/git-show/issues"
+  },
+  "homepage": "https://github.com/coyotebringsfire/git-show",
+  "devDependencies": {
+    "should": "^6.0.3"
+  },
+  "dependencies": {
+    "async": "^1.1.0",
+    "git-wrapper2": "^0.2.5",
+    "q": "^1.4.1",
+    "simple-statistics": "^0.9.2"
+  }
+}
