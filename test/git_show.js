@@ -1,7 +1,7 @@
 var should=require('should'),
 	gitShow=require('../git_show.js'),
-	testRepo="/Users/aumkara/workspace/MuMoo",
-	debug;
+	testRepo="/Users/aumkara/workspace/testrepo",
+	debug=require('debug')('git:test');;
 
 describe('git-show', function gitShowLib() {
 	debug=require('debug')('git:test:gitShowLib');
@@ -10,13 +10,20 @@ describe('git-show', function gitShowLib() {
 		process.chdir(testRepo);
 		done();
 	});
+	
 	it("should return a promise", function test(done) {
 		debug=require('debug')('git:test:gitShowLib:test');
 		var returnObject=gitShow();
 		//duck-type check the returned object to see if it's thennable
 		returnObject.then.should.be.type('function');
-		
-		done();
+		returnObject.then(function onResolve() {
+			debug=require('debug')('git:test:gitShowLib:test:onResolve');
+			done();
+		}, function onReject() {
+			debug=require('debug')('git:test:gitShowLib:test:onReject');
+			should.fail();
+			done();
+		});
 	});
 	it("should reject promise for invalid commit hash", function test(done) {
 		debug=require('debug')('git:test:gitShowLib:test');
