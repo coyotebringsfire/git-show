@@ -5,12 +5,12 @@ var Git=require('git-wrapper2'),
 	ss=require('simple-statistics'),
 	Q=require('q');
 
-function GitShow(commit) {
+function GitShow(options) {
 	var debug=require('debug')('git:GitShow'),
 		git=new Git(), gitExecPromise=Q.defer();
 
-	debug("showing commit %j", commit);
-	git.exec("show", [commit], function results(err, show_out) {
+	debug("showing commit %j", options.commit);
+	git.exec("show", [options.commit], function results(err, show_out) {
 		debug=require('debug')('git:GitShow:results');
 		if(err) {
 			debug("err: %j", err);
