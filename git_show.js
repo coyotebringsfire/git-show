@@ -136,8 +136,10 @@ function GitShow(options) {
 			allDiffs.push(currentDiff);
 			debug=require('debug')('git:GitShow:results:afterEveryLineIsProcessed');
 			debug("allDiffs %j", allDiffs);
-			var numDiffs=allDiffs.length, allDeltas=[],
-				totalLinesChanged=0, averageLinesChanged=0, varianceLinesChanged=0, standardDeviationLinesChanged=0;
+			var numDiffs=allDiffs.length, allDeltas=[], allAdditions=[], allDeletions=[],
+				totalLinesChanged=0, averageLinesChanged=0, varianceLinesChanged=0, standardDeviationLinesChanged=0,
+				averageLinesAdded=0, varianceLinesAdded=0, standardDeviationLinesAdded=0,
+				averageLinesDeleted=0, varianceLinesDeleted=0, standardDeviationLinesDeleted=0;
 
 			debug("all lines processed");
 			async.each( allDiffs, function eachDiff(d, done) {
@@ -145,6 +147,8 @@ function GitShow(options) {
 				debug("adding diff %d", d.deltas);
 				totalLinesChanged+=d.deltas;
 				allDeltas.push(d.deltas);
+				allAdditions.push(d.linesAdded);
+				allDeletions.push(d.lineesDeleted);
 				done();
 			}, function afterTotalLinesCalculated(err) {
 				debug=require('debug')('git:GitShow:results:afterEveryLineIsProcessed:afterTotalLinesCalculated');
@@ -155,12 +159,26 @@ function GitShow(options) {
 				averageLinesChanged=ss.mean(allDeltas);
 				varianceLinesChanged=ss.variance(allDeltas);
 				standardDeviationLinesChanged=ss.standard_deviation(allDeltas);
+
+				averageLinesAdded=ss.mean(allDeltas);
+				varianceLinesAdded=ss.variance(allDeltas);
+				standardDeviationLinesAdded=ss.standard_deviation(allDeltas);
+				
+				averageLinesDeleted=ss.mean(allDeltas);
+				varianceLinesDeleted=ss.variance(allDeltas);
+				standardDeviationLinesDeleted=ss.standard_deviation(allDeltas);
 				debug("resolving promise %j %d %d %d", allDeltas, averageLinesChanged, varianceLinesChanged, standardDeviationLinesChanged );
 				
 				gitExecPromise.resolve({
 					averageLinesChanged: averageLinesChanged,
 					varianceLinesChanged: varianceLinesChanged,
 					standardDeviationLinesChanged: standardDeviationLinesChanged,
+					averageLinesAdded: averageLinesAdded,
+					varianceLinesAdded: varianceLinesAdded,
+					standardDeviationLinesAdded: standardDeviationLinesAdded,
+					averageLinesDeleted: averageLinesDeleted,
+					varianceLinesDeleted: varianceLinesDeleted,
+					standardDeviationLinesDeleted: standardDeviationLinesDeleted,
 					diffs: allDiffs
 				});
 			});

@@ -117,7 +117,7 @@ describe('git-show', function gitShowLib() {
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
-					output.averageLinesChanged.should.not.equal(undefined);
+					output.averageLinesAdded.should.not.equal(undefined);
 					done();
 				}, function onReject(err) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onReject');
@@ -132,7 +132,7 @@ describe('git-show', function gitShowLib() {
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
-					output.varianceLinesChanged.should.not.equal(undefined);
+					output.varianceLinesAdded.should.not.equal(undefined);
 					done();
 				}, function onReject(err) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onReject');
@@ -147,7 +147,7 @@ describe('git-show', function gitShowLib() {
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
-					output.standardDeviationLinesChanged.should.not.equal(undefined);
+					output.standardDeviationLinesAdded.should.not.equal(undefined);
 					done();
 				}, function onReject(err) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onReject');
@@ -162,7 +162,7 @@ describe('git-show', function gitShowLib() {
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
-					output.averageLinesChanged.should.not.equal(undefined);
+					output.averageLinesDeleted.should.not.equal(undefined);
 					done();
 				}, function onReject(err) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onReject');
@@ -177,7 +177,7 @@ describe('git-show', function gitShowLib() {
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
-					output.varianceLinesChanged.should.not.equal(undefined);
+					output.varianceLinesDeleted.should.not.equal(undefined);
 					done();
 				}, function onReject(err) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onReject');
@@ -192,7 +192,7 @@ describe('git-show', function gitShowLib() {
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
-					output.standardDeviationLinesChanged.should.not.equal(undefined);
+					output.standardDeviationLinesDeleted.should.not.equal(undefined);
 					done();
 				}, function onReject(err) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onReject');
