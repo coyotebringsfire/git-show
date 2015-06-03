@@ -1,6 +1,6 @@
 var should=require('should'),
 	gitShow=require('../git_show.js'),
-	testRepo="/Users/aumkara/workspace/testrepo",
+	testRepo="/Users/aumkara/workspace/MuMoo",
 	debug=require('debug')('git:test');;
 
 describe('git-show', function gitShowLib() {
@@ -217,5 +217,19 @@ describe('git-show', function gitShowLib() {
 				});
 		});	
 	});
-	
+	describe("bugfixes", function() {
+		it("should fix GITSHOW-1", function test(done) {
+			process.chdir("/Users/aumkara/workspace/MuMoo");
+			gitShow({commit:'ddc35cc710a103e3c3525f12e6106b1b94666f55'}).
+				then(function onResolve(output) {
+					debug=require('debug')('git:test:gitShowLib:test:onResolve');
+					output.should.be.ok;
+					done();
+				}, function onReject(err) {
+					debug=require('debug')('git:test:gitShowLib:test:onReject');
+					should.fail(err);
+					done();
+				});
+		});
+	});
 });

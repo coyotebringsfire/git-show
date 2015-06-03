@@ -131,14 +131,18 @@ function GitShow(options) {
 				nextLine();
 			}
 		}, function afterEveryLineIsProcessed(err) {
+			//add the last diff
+			currentDiff.deltas=currentDiff.linesAdded-currentDiff.linesDeleted;
+			allDiffs.push(currentDiff);
 			debug=require('debug')('git:GitShow:results:afterEveryLineIsProcessed');
+			debug("allDiffs %j", allDiffs);
 			var numDiffs=allDiffs.length, allDeltas=[],
 				totalLinesChanged=0, averageLinesChanged=0, varianceLinesChanged=0, standardDeviationLinesChanged=0;
 
 			debug("all lines processed");
 			async.each( allDiffs, function eachDiff(d, done) {
 				debug=require('debug')('git:GitShow:results:afterEveryLineIsProcessed:eachDiff');
-				debug("adding diff");
+				debug("adding diff %d", d.deltas);
 				totalLinesChanged+=d.deltas;
 				allDeltas.push(d.deltas);
 				done();
