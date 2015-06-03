@@ -4,7 +4,7 @@
   "description": "runs git show <commit> and parses the results",
   "main": "git_show.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha -R spec"
   },
   "repository": {
     "type": "git",
