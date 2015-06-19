@@ -7,7 +7,7 @@ var Git=require('git-wrapper2'),
 
 function GitShow(options) {
 	var debug=require('debug')('git:GitShow'),
-		git=new Git(), gitExecPromise=Q.defer();
+		git=new Git({'C':options.cwd}), gitExecPromise=Q.defer();
 
 	debug("showing commit %j", options.commit);
 	git.exec("show", [options.commit], function results(err, show_out) {
@@ -19,7 +19,7 @@ function GitShow(options) {
 		if( show_out==undefined ) {
 			return gitExecPromise.resolve(null);
 		}
-		debug("show output: %s", typeof show_out);
+		debug("show output: %s", show_out);
 		var out=show_out.split('\n'), currentDiff, allDiffs=[], showPromise=Q.defer(),
 			commit={
 				hash: undefined,
@@ -31,36 +31,49 @@ function GitShow(options) {
 		async.eachSeries( out, function forEachLine(line, nextLine) {
 			debug=require('debug')('git:GitShow:results:forEachLine');
 			debug("line %s", line);
+			debug("allDiffs %j", allDiffs);
+			debug("commit %j", commit);
 			if( allDiffs.length===0 ) {
 				if( commit.hash===undefined) {
-					debug("setting hash");
-					commit.hash=line;
-					nextLine();
+					commit.hash=line.match(/.*commit ([0123456789abcdef]+)/)[1];
+					debug("setting hash %s", commit.hash);
+					return nextLine();
 				}
 				if( commit.author===undefined) {
 					debug("setting author");
-					commit.author=line;
-					nextLine();
+					var authorMatch=line.match(/Author: ([^ ]+) <([^>]+)>/);
+					commit.author={
+						name: authorMatch[1],
+						email: authorMatch[2]
+					};
+					return nextLine();
 				}
 				if( commit.date===undefined) {
 					debug("setting date");
-					commit.date=line;
-					nextLine();
+					commit.date=line.match(/Date:\s+(.+)$/)[1];
+					return nextLine();
 				}
 				if(line==="") {
 					if(commit.message) {
-						debug("setting blank line");
+						debug("adding blank line");
 						commit.message+="\n";
-						nextLine();
+						return nextLine();
 					}
 				}
 				if( commit.message===undefined) {
 					debug("setting message");
 					commit.message=line;
-					nextLine();
-				} 
+					return nextLine();
+				}
+				if( commit.message==="" ) {
+					debug("updating message");
+					commit.message+=line;
+					return nextLine();
+				}
 			}
+			debug("currentDiff %j", currentDiff);
 			if( currentDiff === undefined ) {
+				debug("looking for diff line\n%s", line);
 				var match=line.match(/^diff --git a\/([^ ]+) b\/(.+)/);
 				if( match ) {
 					debug("new diff %s %s", match[1], match[2]);
@@ -71,14 +84,14 @@ function GitShow(options) {
 						fileOne: match[1],
 						fileTwo: match[2]
 					};
-					nextLine();
+					return nextLine();
 				}
 			} else {
 				//look for new file line
 				debug("looking for new file");
 				var newFileLineMatch=line.match(/new file mode ([a-zA-Z0-9]{6})/);
 				if( newFileLineMatch ){
-					nextLine();
+					return nextLine();
 				}
 				//look for index line
 				var indexLineMatch=line.match(/^index ([a-zA-Z0-9]+)\.\.([a-zA-Z0-9]+) ([0-7]{6})/), 
@@ -89,21 +102,21 @@ function GitShow(options) {
 					currentDiff.startingHash=indexLineMatch[1];
 					currentDiff.endingHash=indexLineMatch[2];
 					currentDiff.mode=indexLineMatch[3];
-					nextLine();
+					return nextLine();
 				}
 				//look for +++ line
 				plusLine=line.match(/^\+{3} a\/[.+]/);
 				debug("looking for +++");
 				if( plusLine ) {
 					debug("+++");
-					nextLine();
+					return nextLine();
 				}
 				//look for --- line
 				minusLine=line.match(/^-{3} b\/[.+]/);
 				debug("looking for ---");
 				if( minusLine ) {
 					debug("---");
-					nextLine();
+					return nextLine();
 				}
 				//look for the line
 				debug("looking for + or - in %s", line);
@@ -128,7 +141,7 @@ function GitShow(options) {
 						fileTwo: newDiffMatch[2]
 					};
 				}
-				nextLine();
+				return nextLine();
 			}
 		}, function afterEveryLineIsProcessed(err) {
 			//add the last diff
