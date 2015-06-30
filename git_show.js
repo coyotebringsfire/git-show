@@ -12,6 +12,7 @@ function GitShow(options) {
 	debug("showing commit %j", options.commit);
 	git.exec("show", [options.commit], function results(err, show_out) {
 		debug=require('debug')('git:GitShow:results');
+		debug("err %j out %j", err, show_out);
 		if(err) {
 			debug("err: %j", err);
 			return gitExecPromise.reject(err);
@@ -19,7 +20,7 @@ function GitShow(options) {
 		if( show_out==undefined ) {
 			return gitExecPromise.resolve(null);
 		}
-		debug("show output: %s", show_out);
+		//debug("show output: %s", show_out);
 		var out=show_out.split('\n'), currentDiff, allDiffs=[], showPromise=Q.defer(),
 			commit={
 				hash: undefined,
@@ -27,6 +28,7 @@ function GitShow(options) {
 				date: undefined,
 				message: undefined
 			};
+		debug("out %j", out);
 		
 		async.eachSeries( out, function forEachLine(line, nextLine) {
 			debug=require('debug')('git:GitShow:results:forEachLine');
@@ -161,7 +163,7 @@ function GitShow(options) {
 				totalLinesChanged+=d.deltas;
 				allDeltas.push(d.deltas);
 				allAdditions.push(d.linesAdded);
-				allDeletions.push(d.lineesDeleted);
+				allDeletions.push(d.linesDeleted);
 				done();
 			}, function afterTotalLinesCalculated(err) {
 				debug=require('debug')('git:GitShow:results:afterEveryLineIsProcessed:afterTotalLinesCalculated');
