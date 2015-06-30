@@ -215,13 +215,30 @@ describe('git-show', function gitShowLib() {
 	});
 	describe("bugfixes", function() {
 		it("should fix GITSHOW-1", function test(done) {
+			debug=require('debug')('git:test:gitShowLib:results:BUGFIX1');
 			gitShow({commit:'ddc35cc710a103e3c3525f12e6106b1b94666f55', cwd:testRepo}).
 				then(function onResolve(output) {
-					debug=require('debug')('git:test:gitShowLib:test:onResolve');
+					debug=require('debug')('git:test:gitShowLib:results:BUGFIX1:onResolve');
 					output.should.be.ok;
 					done();
 				}, function onReject(err) {
 					debug=require('debug')('git:test:gitShowLib:test:onReject');
+					should.fail(err);
+					done();
+				});
+		});
+		it('should fix GITSHOW-2 - stats for additions and deletions were using all changes', function test(done) {
+			debug=require('debug')('git:test:gitShowLib:results:BUGFIX2');
+			gitShow({commit:'HEAD', cwd:testRepo}).
+				then(function onResolve(output) {
+					debug=require('debug')('git:test:gitShowLib:results:BUGFIX2:onResolve');
+					debug("output: %j", output);
+					output.averageLinesChanged.should.not.equal(output.averageLinesDeleted);
+					output.averageLinesChanged.should.not.equal(output.averageLinesAdded);
+					done();
+				}, function onReject(err) {
+					debug=require('debug')('git:test:gitShowLib:results:BUGFIX2:onReject');
+					debug("err %j", err);
 					should.fail(err);
 					done();
 				});

@@ -175,13 +175,13 @@ function GitShow(options) {
 				varianceLinesChanged=ss.variance(allDeltas);
 				standardDeviationLinesChanged=ss.standard_deviation(allDeltas);
 
-				averageLinesAdded=ss.mean(allDeltas);
-				varianceLinesAdded=ss.variance(allDeltas);
-				standardDeviationLinesAdded=ss.standard_deviation(allDeltas);
+				averageLinesAdded=ss.mean(allAdditions);
+				varianceLinesAdded=ss.variance(allAdditions);
+				standardDeviationLinesAdded=ss.standard_deviation(allAdditions);
 				
-				averageLinesDeleted=ss.mean(allDeltas);
-				varianceLinesDeleted=ss.variance(allDeltas);
-				standardDeviationLinesDeleted=ss.standard_deviation(allDeltas);
+				averageLinesDeleted=ss.mean(allDeletions);
+				varianceLinesDeleted=ss.variance(allDeletions);
+				standardDeviationLinesDeleted=ss.standard_deviation(allDeletions);
 				debug("resolving promise %j %d %d %d", allDeltas, averageLinesChanged, varianceLinesChanged, standardDeviationLinesChanged );
 				
 				gitExecPromise.resolve({
