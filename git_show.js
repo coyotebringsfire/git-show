@@ -31,124 +31,148 @@ function GitShow(options) {
 		debug("out %j", out);
 		
 		async.eachSeries( out, function forEachLine(line, nextLine) {
+			var commitMatch, authorMatch, dateMatch, mergeMatch, diffMatch;
 			debug=require('debug')('git:GitShow:results:forEachLine');
 			debug("line %s", line);
 			debug("allDiffs %j", allDiffs);
 			debug("commit %j", commit);
-			if( allDiffs.length===0 ) {
-				if( commit.hash===undefined) {
-					commit.hash=line.match(/.*commit ([0123456789abcdef]+)/)[1];
+			commit.message="";
+			if( undefined===currentDiff ) {
+				commitMatch=line.match(/.*commit ([0123456789abcdef]+)/);
+				if( commitMatch ) {
+					commit.hash=commitMatch[1];
 					debug("setting hash %s", commit.hash);
 					return nextLine();
 				}
-				if( commit.author===undefined) {
-					debug("setting author");
-					var authorMatch=line.match(/Author: ([^ ]+) <([^>]+)>/);
+				mergeMatch=line.match(/Merge: ([^ ]+) ([^ ]+)^/);
+				if(mergeMatch) {
+					debug("setting merge");
+					commits.merge={
+						a: mergeMatch[1],
+						b: mergeMatch[2]
+					};
+					return nextLine();
+				}
+				authorMatch=line.match(/Author: ([^ ]+) <([^>]+)>/);
+				if( authorMatch ) {
+					debug("setting author %s", line);
 					commit.author={
 						name: authorMatch[1],
 						email: authorMatch[2]
 					};
 					return nextLine();
 				}
-				if( commit.date===undefined) {
+				dateMatch=line.match(/Date:\s+(.+)$/);
+				if( dateMatch ) {
 					debug("setting date");
-					commit.date=line.match(/Date:\s+(.+)$/)[1];
+					commit.date=dateMatch[1];
 					return nextLine();
 				}
-				if(line==="") {
+				if(line.match(/^$/)) {
 					if(commit.message) {
 						debug("adding blank line");
 						commit.message+="\n";
 						return nextLine();
 					}
 				}
-				if( commit.message===undefined) {
-					debug("setting message");
-					commit.message=line;
-					return nextLine();
-				}
-				if( commit.message==="" ) {
-					debug("updating message");
-					commit.message+=line;
-					return nextLine();
-				}
-			}
-			debug("currentDiff %j", currentDiff);
-			if( currentDiff === undefined ) {
-				debug("looking for diff line\n%s", line);
-				var match=line.match(/^diff --git a\/([^ ]+) b\/(.+)/);
-				if( match ) {
-					debug("new diff %s %s", match[1], match[2]);
+				diffMatch=line.match(/^diff --git a\/([^ ]+) b\/(.+)/);
+				if(diffMatch) {
+					debug("new diff %s %s", diffMatch[1], diffMatch[2]);
 					currentDiff={
 						linesAdded: 0,
 						linesDeleted: 0,
 						deltas: 0,
-						fileOne: match[1],
-						fileTwo: match[2]
+						fileOne: diffMatch[1],
+						fileTwo: diffMatch[2]
 					};
 					return nextLine();
 				}
-			} else {
-				//look for new file line
-				debug("looking for new file");
-				var newFileLineMatch=line.match(/new file mode ([a-zA-Z0-9]{6})/);
-				if( newFileLineMatch ){
-					return nextLine();
-				}
-				//look for index line
-				var indexLineMatch=line.match(/^index ([a-zA-Z0-9]+)\.\.([a-zA-Z0-9]+) ([0-7]{6})/), 
-					plusLine, minusLine, newDiffMatch; 
-				debug("looking for index");
-				if( match ) {
-					debug("index line: %s %s %s", indexLineMatch[1], indexLineMatch[2], indexLineMatch[3]);
-					currentDiff.startingHash=indexLineMatch[1];
-					currentDiff.endingHash=indexLineMatch[2];
-					currentDiff.mode=indexLineMatch[3];
-					return nextLine();
-				}
-				//look for +++ line
-				plusLine=line.match(/^\+{3} a\/[.+]/);
-				debug("looking for +++");
-				if( plusLine ) {
-					debug("+++");
-					return nextLine();
-				}
-				//look for --- line
-				minusLine=line.match(/^-{3} b\/[.+]/);
-				debug("looking for ---");
-				if( minusLine ) {
-					debug("---");
-					return nextLine();
-				}
-				//look for the line
-				debug("looking for + or - in %s", line);
-				if(line.match(/^-/)) {
-					currentDiff.linesDeleted++;
-					debug("one more line deleted %d", currentDiff.linesDeleted);
-				}
-				if(line.match(/^\+/)) {
-					currentDiff.linesAdded++;
-					debug("one more line added %d", currentDiff.linesAdded);
-				}
-				newDiffMatch=line.match(/^diff --git a\/([^ ]+) b\/(.+)/);
-				debug("looking for new diff in %s", line);
-				if(newDiffMatch) {
-					currentDiff.deltas=currentDiff.linesAdded-currentDiff.linesDeleted;
-					allDiffs.push(currentDiff);
-					currentDiff={
-						linesAdded: 0,
-						linesDeleted: 0,
-						deltas: 0,
-						fileOne: newDiffMatch[1],
-						fileTwo: newDiffMatch[2]
-					};
-				}
+				debug("setting message");
+				commit.message+=line;
 				return nextLine();
 			}
+			debug("currentDiff %j", currentDiff);
+			//look for new file line
+			debug("looking for new file");
+			var newFileLineMatch=line.match(/new file mode ([a-zA-Z0-9]{6})/);
+			if( newFileLineMatch ){
+				return nextLine();
+			}
+			//look for index line
+			var indexLineMatch=line.match(/^index ([a-zA-Z0-9]+)\.\.([a-zA-Z0-9]+) ([0-7]{6})/), 
+				plusLine, minusLine, newDiffMatch; 
+			debug("looking for index");
+			if( indexLineMatch ) {
+				debug("index line: %s %s %s", indexLineMatch[1], indexLineMatch[2], indexLineMatch[3]);
+				currentDiff.startingHash=indexLineMatch[1];
+				currentDiff.endingHash=indexLineMatch[2];
+				currentDiff.mode=indexLineMatch[3];
+				return nextLine();
+			}
+			//look for +++ line in a
+			plusLine=line.match(/^\+{3} a\/.+/);
+			debug("looking for +++");
+			if( plusLine ) {
+				debug("+++");
+				return nextLine();
+			}
+			//look for +++ line in b
+			plusLine=line.match(/^\+{3} b\/.+/);
+			debug("looking for +++");
+			if( plusLine ) {
+				debug("+++");
+				return nextLine();
+			}
+			//look for --- line in a
+			minusLine=line.match(/^-{3} a\/.+/);
+			debug("looking for ---");
+			if( minusLine ) {
+				debug("---");
+				return nextLine();
+			}
+			//look for --- line in b
+			minusLine=line.match(/^-{3} b\/.+/);
+			debug("looking for ---");
+			if( minusLine ) {
+				debug("---");
+				return nextLine();
+			}
+			debug("look for @@ line in %s", line);
+			if( line.match(/^@@.+@@$/) ) {
+				debug("@@");
+				return nextLine();
+			}
+			//look for the line
+			debug("looking for + or - in %s", line);
+			if(line.match(/^-/)) {
+				currentDiff.linesDeleted++;
+				debug("one more line deleted %d", currentDiff.linesDeleted);
+			}
+			if(line.match(/^\+/)) {
+				currentDiff.linesAdded++;
+				debug("one more line added %d", currentDiff.linesAdded);
+			}
+			newDiffMatch=line.match(/^diff --git a\/([^ ]+) b\/(.+)/);
+			debug("looking for new diff in %s", line);
+			if(newDiffMatch) {
+				currentDiff.deltas=currentDiff.linesAdded-currentDiff.linesDeleted;
+				allDiffs.push(currentDiff);
+				currentDiff={
+					linesAdded: 0,
+					linesDeleted: 0,
+					deltas: 0,
+					fileOne: newDiffMatch[1],
+					fileTwo: newDiffMatch[2]
+				};
+				return nextLine();
+			}
+			nextLine();
 		}, function afterEveryLineIsProcessed(err) {
 			//add the last diff
-			currentDiff.deltas=currentDiff.linesAdded-currentDiff.linesDeleted;
-			allDiffs.push(currentDiff);
+			if( currentDiff ) {
+				currentDiff.deltas=currentDiff.linesAdded-currentDiff.linesDeleted;
+				allDiffs.push(currentDiff);
+			}
 			debug=require('debug')('git:GitShow:results:afterEveryLineIsProcessed');
 			debug("allDiffs %j", allDiffs);
 			var numDiffs=allDiffs.length, allDeltas=[], allAdditions=[], allDeletions=[],
