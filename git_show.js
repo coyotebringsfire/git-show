@@ -7,10 +7,10 @@ var Git=require('git-wrapper2'),
 
 function GitShow(options) {
 	var debug=require('debug')('git:GitShow'),
-		git=new Git({'C':options.cwd}), gitExecPromise=Q.defer();
+		git=new Git(), gitExecPromise=Q.defer();
 
-	debug("showing commit %j", options.commit);
-	git.exec("show", [options.commit], function results(err, show_out) {
+	debug("showing commit %j", (options && options.commit) || "HEAD");
+	git.exec("show", [(options && options.commit) || "HEAD"], function results(err, show_out) {
 		debug=require('debug')('git:GitShow:results');
 		debug("err %j out %j", err, show_out);
 		if(err) {
@@ -34,7 +34,7 @@ function GitShow(options) {
 			var commitMatch, authorMatch, dateMatch, mergeMatch, diffMatch;
 			debug=require('debug')('git:GitShow:results:forEachLine');
 			debug("line %s", line);
-			debug("allDiffs %j", allDiffs);
+			//debug("allDiffs %j", allDiffs);
 			debug("commit %j", commit);
 			commit.message="";
 			if( undefined===currentDiff ) {

@@ -9,7 +9,8 @@ describe('git-show', function gitShowLib() {
 	
 	it("should return a promise", function test(done) {
 		debug=require('debug')('git:test:gitShowLib:test');
-		var returnObject=gitShow({cwd:testRepo});
+		process.chdir(testRepo);
+		var returnObject=gitShow();
 		//duck-type check the returned object to see if it's thennable
 		returnObject.then.should.be.type('function');
 		returnObject.then(function onResolve() {
@@ -23,7 +24,8 @@ describe('git-show', function gitShowLib() {
 	});
 	it("should reject promise for invalid commit hash", function test(done) {
 		debug=require('debug')('git:test:gitShowLib:test');
-		gitShow({commit:'invalidhash', cwd:testRepo}).
+		process.chdir(testRepo);
+		gitShow({commit:'invalidhash'}).
 			then(function onResolve(output) {
 				debug=require('debug')('git:test:gitShowLib:test:onResolve');
 				should.fail();
@@ -37,7 +39,8 @@ describe('git-show', function gitShowLib() {
 	});
 	it("should resolve promise for HEAD if not passed a commit hash", function test(done) {
 		debug=require('debug')('git:test:gitShowLib:test');
-		gitShow({cwd:testRepo}).
+		process.chdir(testRepo);
+		gitShow().
 			then(function onResolve(output) {
 				debug=require('debug')('git:test:gitShowLib:test:onResolve');
 				debug("output: %j", output);
@@ -50,7 +53,8 @@ describe('git-show', function gitShowLib() {
 	});
 	it("should resolve promise for specified commit hash", function test(done) {
 		debug=require('debug')('git:test:gitShowLib:test');
-		gitShow({commit:'HEAD', cwd:testRepo}).
+		process.chdir(testRepo);
+		gitShow({commit:'HEAD'}).
 			then(function onResolve(output) {
 				debug=require('debug')('git:test:gitShowLib:test:onResolve');
 				output.should.be.ok;
@@ -64,7 +68,8 @@ describe('git-show', function gitShowLib() {
 	describe("results", function() {
 		it("should contain average lines changed", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:test');
-			gitShow({commit:'HEAD', cwd:testRepo}).
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
@@ -79,7 +84,8 @@ describe('git-show', function gitShowLib() {
 		});	
 		it("should contain variance lines changed", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:test');
-			gitShow({commit:'HEAD', cwd:testRepo}).
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
@@ -94,7 +100,8 @@ describe('git-show', function gitShowLib() {
 		});	
 		it("should contain standard deviation lines changed", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:test');
-			gitShow({commit:'HEAD', cwd:testRepo}).
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
@@ -109,7 +116,8 @@ describe('git-show', function gitShowLib() {
 		});
 		it("should contain average lines added", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:test');
-			gitShow({commit:'HEAD', cwd:testRepo}).
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
@@ -124,7 +132,8 @@ describe('git-show', function gitShowLib() {
 		});	
 		it("should contain variance lines added", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:test');
-			gitShow({commit:'HEAD', cwd:testRepo}).
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
@@ -139,7 +148,8 @@ describe('git-show', function gitShowLib() {
 		});	
 		it("should contain standard deviation lines added", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:test');
-			gitShow({commit:'HEAD', cwd:testRepo}).
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
@@ -154,7 +164,8 @@ describe('git-show', function gitShowLib() {
 		});	
 		it("should contain average lines removed", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:test');
-			gitShow({commit:'HEAD', cwd:testRepo}).
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
@@ -169,7 +180,8 @@ describe('git-show', function gitShowLib() {
 		});	
 		it("should contain variance lines removed", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:test');
-			gitShow({commit:'HEAD', cwd:testRepo}).
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
@@ -184,7 +196,8 @@ describe('git-show', function gitShowLib() {
 		});	
 		it("should contain standard deviation lines removed", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:test');
-			gitShow({commit:'HEAD', cwd:testRepo}).
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
@@ -199,7 +212,8 @@ describe('git-show', function gitShowLib() {
 		});	
 		it("should contain all diffs", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:test');
-			gitShow({commit:'HEAD', cwd:testRepo}).
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:test:onResolve');
 					debug("output: %j", output);
@@ -216,7 +230,8 @@ describe('git-show', function gitShowLib() {
 	describe("bugfixes", function() {
 		it("should fix GITSHOW-1", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:BUGFIX1');
-			gitShow({commit:'HEAD', cwd:testRepo}).
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:BUGFIX1:onResolve');
 					output.should.be.ok;
@@ -229,7 +244,8 @@ describe('git-show', function gitShowLib() {
 		});
 		it('should fix GITSHOW-2 - stats for additions and deletions were using all changes', function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:BUGFIX2');
-			gitShow({commit:'HEAD', cwd:testRepo}).
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
 					debug=require('debug')('git:test:gitShowLib:results:BUGFIX2:onResolve');
 					debug("output: %j", output);
