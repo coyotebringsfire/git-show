@@ -1,7 +1,9 @@
 var should=require('should'),
 	gitShow=require('../git_show.js'),
 	testRepo="/Users/aumkara/workspace/noderank",
-	debug=require('debug')('git:test');;
+	debug=require('debug')('git:test'),
+	rimraf=require('rimraf'),
+	run=require('comandante');
 
 describe('git-show', function gitShowLib() {
 	this.timeout(0);
@@ -228,6 +230,25 @@ describe('git-show', function gitShowLib() {
 		});	
 	});
 	describe("bugfixes", function() {
+		before(function beforeBugfixes(done) {
+			// clone repo to /tmp/auth0-widget.js
+			rimraf("/tmp/auth0-widget.js", function onRimRafDone() {
+				var gc=run('git', ["clone", "https://github.com/auth0/widget.git", "/tmp/auth0-widget.js"], {env:{"GIT_TERMINAL_PROMPT":"0"}});
+		    gc.response="";
+		    gc.on('error', function onError(msg) {
+		      done(new Error(msg));
+		    });
+		    gc.on('data', function onData(data) {
+		      gc.response+=data;
+		    });
+		    gc.on('end', function onEnd(err) {
+		      if (err) {
+		        return done(err);
+		      }
+		      done();
+		    });
+			});
+		});
 		it("should fix GITSHOW-1", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:BUGFIX1');
 			process.chdir(testRepo);
@@ -257,6 +278,31 @@ describe('git-show', function gitShowLib() {
 				}, function onReject(err) {
 					debug=require('debug')('git:test:gitShowLib:results:BUGFIX2:onReject');
 					debug("err %j", err);
+					should.fail(err);
+					done();
+				});
+		});
+		it("should fix GITSHOW-3: set statistics to 0 if the result is null", function test(done) {
+			debug=require('debug')('git:test:gitShowLib:results:BUGFIX4');
+			var testRepo="/tmp/auth0-widget.js";
+			var commitHash='9581a54c0301bc81cd7f97b73cbc679a37ec219e';
+			process.chdir(testRepo);
+			gitShow({commit:commitHash}).
+				then(function onResolve(output) {
+					debug=require('debug')('git:test:gitShowLib:results:BUGFIX4:onResolve');
+					output.should.be.ok;
+					output.averageLinesChanged.should.equal(0);
+					output.varianceLinesChanged.should.equal(0);
+					output.standardDeviationLinesChanged.should.equal(0);
+					output.averageLinesAdded.should.equal(0);
+					output.varianceLinesAdded.should.equal(0);
+					output.standardDeviationLinesAdded.should.equal(0);
+					output.averageLinesDeleted.should.equal(0);
+					output.varianceLinesDeleted.should.equal(0);
+					output.standardDeviationLinesDeleted.should.equal(0);
+					done();
+				}, function onReject(err) {
+					debug=require('debug')('git:test:gitShowLib:test:onReject');
 					should.fail(err);
 					done();
 				});
