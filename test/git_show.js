@@ -1,6 +1,6 @@
 var should=require('should'),
 	gitShow=require('../git_show.js'),
-	testRepo="/Users/aumkara/workspace/git-show",
+	testRepo=__dirname,
 	debug=require('debug')('git:test');;
 
 describe('git-show', function gitShowLib() {
