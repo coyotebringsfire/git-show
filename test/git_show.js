@@ -1,6 +1,6 @@
 var should=require('should'),
 	gitShow=require('../git_show.js'),
-	testRepo="/Users/aumkara/workspace/noderank",
+	testRepo="/Users/aumkara/workspace/git-show",
 	debug=require('debug')('git:test');;
 
 describe('git-show', function gitShowLib() {
@@ -244,6 +244,26 @@ describe('git-show', function gitShowLib() {
 		});
 		it('should fix GITSHOW-2 - stats for additions and deletions were using all changes', function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:BUGFIX2');
+			process.chdir(testRepo);
+			gitShow({commit:'HEAD'}).
+				then(function onResolve(output) {
+					debug=require('debug')('git:test:gitShowLib:results:BUGFIX2:onResolve');
+					debug("output: %j", output);
+					if( output.averageLinesChanged ) {
+						output.averageLinesChanged.should.not.equal(output.averageLinesDeleted);
+						output.averageLinesChanged.should.not.equal(output.averageLinesAdded);
+					}
+					done();
+				}, function onReject(err) {
+					debug=require('debug')('git:test:gitShowLib:results:BUGFIX2:onReject');
+					debug("err %j", err);
+					should.fail(err);
+					done();
+				});
+		});
+		it("should fix GITSHOW-3", function test(done) {
+			debug=require('debug')('git:test:gitShowLib:results:BUGFIX2');
+			testRepo="/Users/aumkara/workspace/ags-download";
 			process.chdir(testRepo);
 			gitShow({commit:'HEAD'}).
 				then(function onResolve(output) {
