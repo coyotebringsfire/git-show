@@ -35,15 +35,17 @@ function GitShow(options) {
 			debug=require('debug')('git:GitShow:results:forEachLine');
 			debug("line %s", line);
 			//debug("allDiffs %j", allDiffs);
-			debug("commit %j", commit);
+			debug("commit %j %j", commit, currentDiff);
 			commit.message="";
 			if( undefined===currentDiff ) {
+				debug("looking for commit");
 				commitMatch=line.match(/.*commit ([0123456789abcdef]+)/);
 				if( commitMatch ) {
 					commit.hash=commitMatch[1];
 					debug("setting hash %s", commit.hash);
 					return nextLine();
 				}
+				debug("looking for merge");
 				mergeMatch=line.match(/Merge: ([^ ]+) ([^ ]+)^/);
 				if(mergeMatch) {
 					debug("setting merge");
@@ -53,6 +55,7 @@ function GitShow(options) {
 					};
 					return nextLine();
 				}
+				debug("looking for author");
 				authorMatch=line.match(/Author: ([^ ]+) <([^>]+)>/);
 				if( authorMatch ) {
 					debug("setting author %s", line);
@@ -62,12 +65,14 @@ function GitShow(options) {
 					};
 					return nextLine();
 				}
+				debug("looking for date");
 				dateMatch=line.match(/Date:\s+(.+)$/);
 				if( dateMatch ) {
 					debug("setting date");
 					commit.date=dateMatch[1];
 					return nextLine();
 				}
+				debug("looking for blank line");
 				if(line.match(/^$/)) {
 					if(commit.message) {
 						debug("adding blank line");
@@ -75,6 +80,7 @@ function GitShow(options) {
 						return nextLine();
 					}
 				}
+				debug("looking for new diff");
 				diffMatch=line.match(/^diff --git a\/([^ ]+) b\/(.+)/);
 				if(diffMatch) {
 					debug("new diff %s %s", diffMatch[1], diffMatch[2]);
@@ -209,15 +215,15 @@ function GitShow(options) {
 				debug("resolving promise %j %d %d %d", allDeltas, averageLinesChanged, varianceLinesChanged, standardDeviationLinesChanged );
 				
 				gitExecPromise.resolve({
-					averageLinesChanged: averageLinesChanged,
-					varianceLinesChanged: varianceLinesChanged,
-					standardDeviationLinesChanged: standardDeviationLinesChanged,
-					averageLinesAdded: averageLinesAdded,
-					varianceLinesAdded: varianceLinesAdded,
-					standardDeviationLinesAdded: standardDeviationLinesAdded,
-					averageLinesDeleted: averageLinesDeleted,
-					varianceLinesDeleted: varianceLinesDeleted,
-					standardDeviationLinesDeleted: standardDeviationLinesDeleted,
+					averageLinesChanged: averageLinesChanged || 0,
+					varianceLinesChanged: varianceLinesChanged || 0,
+					standardDeviationLinesChanged: standardDeviationLinesChanged || 0,
+					averageLinesAdded: averageLinesAdded || 0,
+					varianceLinesAdded: varianceLinesAdded || 0,
+					standardDeviationLinesAdded: standardDeviationLinesAdded || 0,
+					averageLinesDeleted: averageLinesDeleted || 0,
+					varianceLinesDeleted: varianceLinesDeleted || 0,
+					standardDeviationLinesDeleted: standardDeviationLinesDeleted || 0,
 					diffs: allDiffs
 				});
 			});
