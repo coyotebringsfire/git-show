@@ -4,7 +4,7 @@
   "description": "runs git show <commit> and parses the results",
   "main": "git_show.js",
   "scripts": {
-    "test": "mocha -R spec"
+    "test": "node_modules/mocha/bin/mocha -R spec"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
   "devDependencies": {
     "comandante": "0.0.1",
     "rimraf": "^2.4.2",
+    "mocha": "^2.2.5",
     "should": "^6.0.3"
   },
   "dependencies": {

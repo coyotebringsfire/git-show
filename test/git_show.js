@@ -1,9 +1,14 @@
 var should=require('should'),
 	gitShow=require('../git_show.js'),
+<<<<<<< HEAD
 	testRepo="/Users/aumkara/workspace/noderank",
 	debug=require('debug')('git:test'),
 	rimraf=require('rimraf'),
 	run=require('comandante');
+=======
+	testRepo=__dirname,
+	debug=require('debug')('git:test');;
+>>>>>>> 503e636ecaa2252aa1a013ef3d4ffed17f5e126d
 
 describe('git-show', function gitShowLib() {
 	this.timeout(0);
