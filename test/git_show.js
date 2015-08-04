@@ -1,45 +1,50 @@
-var should=require('should'),
-	gitShow=require('../git_show.js'),
-	rimraf=require('rimraf'),
-	run=require('comandante');
-	testRepo=__dirname,
-	debug=require('debug')('git:test');
+/*jshint expr: true*/
+var should   = require('should'),
+    gitShow    = require('../git_show.js'),
+    rimraf     = require('rimraf'),
+    run        = require('comandante'),
+    testRepo   = __dirname,
+    debug      = require('debug')('git:test'),
+    gitHistory = require('git-history'),
+    Q          = require('q'),
+    async      = require('async');
 
 describe('git-show', function gitShowLib() {
-	this.timeout(0);
-	debug=require('debug')('git:test:gitShowLib');
-	
-	it("should return a promise", function test(done) {
-		debug=require('debug')('git:test:gitShowLib:test');
-		process.chdir(testRepo);
-		var returnObject=gitShow();
-		//duck-type check the returned object to see if it's thennable
-		returnObject.then.should.be.type('function');
-		returnObject.then(function onResolve() {
-			debug=require('debug')('git:test:gitShowLib:test:onResolve');
-			done();
-		}, function onReject() {
-			debug=require('debug')('git:test:gitShowLib:test:onReject');
-			should.fail();
-			done();
-		});
-	});
-	it("should reject promise for invalid commit hash", function test(done) {
-		debug=require('debug')('git:test:gitShowLib:test');
-		process.chdir(testRepo);
-		gitShow({commit:'invalidhash'}).
-			then(function onResolve(output) {
-				debug=require('debug')('git:test:gitShowLib:test:onResolve');
-				should.fail();
-				done();
-			}, function onReject(err) {
-				debug=require('debug')('git:test:gitShowLib:test:onReject');
-				debug("err: %j", err);
-				err.should.match(/unknown revision or path not in the working tree/);
-				done();
-			});
-	});
-	it("should resolve promise for HEAD if not passed a commit hash", function test(done) {
+	'use strict';
+  this.timeout(0);
+  debug = require('debug')('git:test:gitShowLib');
+
+  it("should return a promise", function test(done) {
+    debug=require('debug')('git:test:gitShowLib:test');
+    process.chdir(testRepo);
+    var returnObject=gitShow();
+    //duck-type check the returned object to see if it's thennable
+    returnObject.then.should.be.type('function');
+    returnObject.then(function onResolve() {
+      debug=require('debug')('git:test:gitShowLib:test:onResolve');
+      done();
+    }, function onReject() {
+      debug=require('debug')('git:test:gitShowLib:test:onReject');
+      should.fail();
+      done();
+    });
+  });
+  it("should reject promise for invalid commit hash", function test(done) {
+    debug=require('debug')('git:test:gitShowLib:test');
+    process.chdir(testRepo);
+    gitShow({commit:'invalidhash'}).
+      then(function onResolve(output) {
+        debug=require('debug')('git:test:gitShowLib:test:onResolve');
+        should.fail();
+        done();
+      }, function onReject(err) {
+        debug=require('debug')('git:test:gitShowLib:test:onReject');
+        debug("err: %j", err);
+        err.should.match(/unknown revision or path not in the working tree/);
+        done();
+      });
+  });
+  it("should resolve promise for HEAD if not passed a commit hash", function test(done) {
 		debug=require('debug')('git:test:gitShowLib:test');
 		process.chdir(testRepo);
 		gitShow().
@@ -52,8 +57,8 @@ describe('git-show', function gitShowLib() {
 				should.fail(err);
 				done();
 			});
-	});
-	it("should resolve promise for specified commit hash", function test(done) {
+  });
+  it("should resolve promise for specified commit hash", function test(done) {
 		debug=require('debug')('git:test:gitShowLib:test');
 		process.chdir(testRepo);
 		gitShow({commit:'HEAD'}).
@@ -66,8 +71,8 @@ describe('git-show', function gitShowLib() {
 				should.fail(err);
 				done();
 			});
-	});
-	describe("results", function() {
+  });
+  describe("results", function() {
 		it("should contain average lines changed", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:test');
 			process.chdir(testRepo);
@@ -228,8 +233,8 @@ describe('git-show', function gitShowLib() {
 					done();
 				});
 		});	
-	});
-	describe("bugfixes", function() {
+  });
+  describe("bugfixes", function() {
 		before(function beforeBugfixes(done) {
 			// clone repo to /tmp/auth0-widget.js
 			rimraf("/tmp/auth0-widget.js", function onRimRafDone() {
@@ -249,7 +254,7 @@ describe('git-show', function gitShowLib() {
 		    });
 			});
 		});
-		it("should fix GITSHOW-1", function test(done) {
+		it("should fix GITSHOW-1: sometimes returns null stats", function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:BUGFIX1');
 			process.chdir(testRepo);
 			gitShow({commit:'HEAD'}).
@@ -263,7 +268,7 @@ describe('git-show', function gitShowLib() {
 					done();
 				});
 		});
-		it('should fix GITSHOW-2 - stats for additions and deletions were using all changes', function test(done) {
+		it('should fix GITSHOW-2: stats for additions and deletions were using all changes', function test(done) {
 			debug=require('debug')('git:test:gitShowLib:results:BUGFIX2');
 			process.chdir(testRepo);
 			gitShow({commit:'HEAD'}).
@@ -306,6 +311,61 @@ describe('git-show', function gitShowLib() {
 					should.fail(err);
 					done();
 				});
+		});
+		it("should fix GITSHOW-4: successfully process a repo containing commits with very long lines", function test(done) {
+			debug=require('debug')('git:test:gitShowLib:results:BUGFIX4');
+			var testRepo="/tmp/auth0-widget.js", historyPromise=Q.defer();
+			process.chdir(testRepo);
+			//TODO get array of all commit hashes
+			var history=gitHistory(), commits=[];
+			function onCommitEventHandler(_commit) {
+				debug=require('debug')('git:test:gitShowLib:results:BUGFIX4:onCommitEventHandler');
+				debug("handling %j", _commit.hash);
+		    var commit=_commit;
+		    if(commit) {
+		      commits.push(commit.hash);
+		    } else {
+		      log.info({cwd:process.cwd()}, "null commit history");
+		    }
+		  }
+		  // Listen for commit events from the history.
+		  history.on("data", onCommitEventHandler);
+		  
+		  function onHistoryEnd() {
+		  	debug=require('debug')('git:test:gitShowLib:results:BUGFIX4:onHistoryEnd');
+			  debug("history end %j", commits);  
+		  	historyPromise.resolve(commits);
+		  }
+		  history.on('end', onHistoryEnd); 
+
+		  Q.all([historyPromise.promise])
+		  	.then(function onPromiseResolved(commits) {
+		  		debug=require('debug')('git:test:gitShowLib:results:BUGFIX4:onPromiseResolved');
+		  		debug("promise resolved commits:%j", commits[0]);
+		  		async.eachSeries(commits[0], function forEachCommit(commitHash, nextCommit) {
+		  			debug=require('debug')('git:test:gitShowLib:results:BUGFIX4:forEachCommit');
+		  			debug("showing %s", commitHash);
+		  			gitShow({commit:commitHash}).
+							then(function onResolve(output) {
+								debug=require('debug')('git:test:gitShowLib:results:BUGFIX4:onResolve');
+								debug('show commit resolved %j', output);
+								if( output !== null ) {
+									output.should.be.ok;
+								}
+								debug("checking next commit");
+								return nextCommit();
+							}, function onReject(err) {
+								debug=require('debug')('git:test:gitShowLib:results:BUGFIX4:onReject');
+								debug("error showing commit %s", err.message);
+								should.fail(err);
+								return nextCommit(err);
+							})
+							.done();
+		  		}, function onAllCommitsResolved(err) {
+		  			should(err).not.be.ok;
+		  			done();
+		  		});
+		  	});
 		});
 	});
 });

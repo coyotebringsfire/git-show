@@ -1,4 +1,3 @@
-"use strict";
 var async=require('async');
 
 var Git=require('git-wrapper2'),
@@ -6,6 +5,7 @@ var Git=require('git-wrapper2'),
 	Q=require('q');
 
 function GitShow(options) {
+	"use strict";
 	var debug=require('debug')('git:GitShow'),
 		git=new Git(), gitExecPromise=Q.defer();
 
@@ -17,7 +17,7 @@ function GitShow(options) {
 			debug("err: %j", err);
 			return gitExecPromise.reject(err);
 		}
-		if( show_out==undefined ) {
+		if( show_out === undefined ) {
 			return gitExecPromise.resolve(null);
 		}
 		//debug("show output: %s", show_out);

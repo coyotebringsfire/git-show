@@ -4,6 +4,7 @@
   "description": "runs git show <commit> and parses the results",
   "main": "git_show.js",
   "scripts": {
+    "jshint": "node_modules/jshint/bin/jshint *.js test/*.js",
     "test": "node_modules/mocha/bin/mocha -R spec"
   },
   "repository": {
@@ -28,6 +29,7 @@
     "async": "^1.4.0",
     "comandante": "0.0.1",
     "git-history": "0.0.2",
+    "jshint": "^2.8.0",
     "mocha": "^2.2.5",
     "rimraf": "^2.4.2",
     "should": "^6.0.3"
