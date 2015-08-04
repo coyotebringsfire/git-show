@@ -38,8 +38,8 @@ function GitShow(options) {
 			debug("commit %j %j", commit, currentDiff);
 			commit.message="";
 			if( undefined===currentDiff ) {
-				debug("looking for commit");
-				commitMatch=line.match(/.*commit ([0123456789abcdef]+)/);
+				debug("looking for commit in %s", line);
+				commitMatch=line.match(/^commit ([0123456789abcdef]+)/);
 				if( commitMatch ) {
 					commit.hash=commitMatch[1];
 					debug("setting hash %s", commit.hash);
