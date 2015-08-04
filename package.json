@@ -1,6 +1,6 @@
 {
   "name": "git-show",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "runs git show <commit> and parses the results",
   "main": "git_show.js",
   "scripts": {
